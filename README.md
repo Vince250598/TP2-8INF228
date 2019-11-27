@@ -14,6 +14,22 @@ Il y a plusieurs type de requêtes, premièrement les Query, pour aller trouver 
 Ce qui est bien avec le GraphQL, c'est qu'on reçois seulement ce que l'on demande et pas plus, ce qui permet de créer des applications légère qui génère moins de trafique. 
 
 ## Objectifs du tutoriel
-L'objetif de ce tutoriel est de vous apprendre à créer un serveur qui utilise GraphQL. Après ce tutoriel, vous aurez une bonne base pour implémenter GraphQL dans n'importe quelle application.
+L'objetif de ce tutoriel est de vous apprendre à créer un serveur qui utilise GraphQL. Après ce tutoriel, vous aurez une bonne base pour bien comprendre l'utilité et bien implémenter GraphQL dans n'importe quelle application. Nous créérons un serveur en JavaScript qui simule la gestion d'une bibliothèque.
 
-## partie 1
+## Tutoriel
+Pour commencer, quelques technologies doivent être déjà installées sur votre ordinateur, nous utiliserons ces technologies pour rendre notre expérience plus simple. Les technologies sont les suivantes:
+- Yarn, pour gérer les dépendances du projet
+- Node.js, pour exécuter le code Javascript du serveur
+
+### Le Commencement
+On commence par ouvrir le terminal on se crée un répertoire pour y placer notre projet et on utilise yarn init pour créer un fichier de configuration pour Node dans celui-ci à l'aide des commandes suivantes.
+```
+mkdir tutoriel-graphql
+cd tutoriel-graphql
+yarn init -y
+```
+On peut ensuite créer un nouveau répertoire src qui contiendera le code source de l'application. On ajoute également le fichier index.js qui sera le coeur de l'application. On utilise les commandes suivantes:
+```
+mkdir src
+touche src/index.js
+```
