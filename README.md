@@ -17,6 +17,7 @@ Ce qui est bien avec le GraphQL, c'est qu'on reçois seulement ce que l'on deman
 L'objetif de ce tutoriel est de vous apprendre à créer un serveur qui utilise GraphQL. Après ce tutoriel, vous aurez une bonne base pour bien comprendre l'utilité et bien implémenter GraphQL dans n'importe quelle application. Nous créérons un serveur en JavaScript qui simule la gestion d'une bibliothèque.
 
 ## Tutoriel
+Ce tutoriel à été conçu pour un système d'exploitation linux, j'ai utilisé Ubuntu, mais plusieurs distributions devraient fonctionner.
 Pour commencer, quelques technologies doivent être déjà installées sur votre ordinateur, nous utiliserons ces technologies pour rendre notre expérience plus simple. Les technologies sont les suivantes:
 - Yarn, pour gérer les dépendances du projet
 - Node.js, pour exécuter le code Javascript du serveur
@@ -76,7 +77,7 @@ On peut maintenant tester notre serveur GraphQL en utilisant cette commande à p
 node src/index.js
 ```
 Comme mentionné dans la fenêtre de commande, le serveur est sur localhost:4000, pour tester notre API on n'a qu'a naviguer sur localhost:4000 à l'aide d'un navigateur. On arrive sur le GraphQL Playground, un "application" qui permet de tester des APIs GraphQL de façon interactive.
-!(GraphQLPlayground.png)
+!(/GraphQLPlayground.png)
 En cliquant sur le bouton schéma à droite on peut voir la documentation de l'API, elle affiche tous les opérations et types de notre schéma GraphQL.
 
 On peut envoyer une requête de la manière suivante:
@@ -88,7 +89,7 @@ query {
 Cette requête devrait envoyer Le string que nous avons défini dans le resolver.
 
 ### Explication des schémas
-Le centre d'un API GraphQl est son schéma. Le schéma est ce qui décrit tous les types données et comment ces données interagissent entre elles. Le schéma défini aussi quelles données on peut aller chercher avec les requêtes et quelles données on peut modifier avec les mutations. Les schémas sont écrit en SDL(Schema Definition Language) qui ressemble un peu Json.
+Le centre d'un API GraphQL est son schéma. Le schéma est ce qui décrit tous les types données et comment ces données interagissent entre elles. Le schéma défini aussi quelles données on peut aller chercher avec les requêtes et quelles données on peut modifier avec les mutations. Les schémas sont écrit en SDL(Schema Definition Language) qui ressemble un peu Json.
 
 Chaque Schéma GraphQL possède trois types dit "racine", ce sont les suivants: Query, Mutation et Subscription. Ils correspondent aux opérations offertes par GraphQL. Dans notre cas, nous avons seulement un attribut dans le type Query(info), quand on envoie des requêtes à un API, elles doivent toujours commencer dans un type racine.
 
@@ -114,7 +115,7 @@ type Livre {
 `
 ```
 
-On ne fait qu'ajouter un attribut à Query qui va retourner un liste de Livre, cette liste ne sera jamais null et ne contiendera jamais d'élément null(les 2 !). Ensuite on crée notre nouveau type Livre qui a un id et un titre.
+On ne fait qu'ajouter un attribut à Query qui va retourner un liste de Livre, cette liste ne sera jamais null et ne contiendera jamais d'élément null(les 2 !). Ensuite on crée notre nouveau type Livre qui a un id et un titre. L'id du livre est d'un type spécial ID.
 
 La prochaine étape est d'implémenter un resolver pour la requête bibliotheque de cette façon:
 ```JavaScript
@@ -163,7 +164,7 @@ query {
 On ne reçois que les titre des livres à la place de toutes l'information.
 C'est ce qui fait la puissance de graphQl, on ne reçois ce que l'on demande et on diminue donc le trafique sur le réseau. Par contre, on doit obligatoirement avoir au moins 1 attribut dans notre requête.
 
-### La mot sur les resolvers
+### Un mot sur les resolvers
 Comme vous l'avez surement remarqué, on a implémenté des resolvers mais on a jamais expliqué ce qu'ils faisaient. Les résolvers servent à transformer les opérations GraphQL(Query, Mutation, Subscription) en données. Une fonction resolver à toujours la forme suivante:
 ```JavaScript
 nomAttribut: (parent, args, context, info) => data;
@@ -174,10 +175,110 @@ context est un objet qui est partagé par tous les resolvers, on peut l'utiliser
 info contient de l'information sur l'état de l'exécution de l'opération qui devrait seulement être utilisé dans des cas avancés.
 
 ### Ajout d'une mutation
+Nous allons maintenant ajouter une mutation dans notre API GraphQL, on pourra ajouter de nouveaux livres sur le serveur.
+Comme auparavant, on commence par modifier le schéma GraphQL:
+```
+const typeDefs = `
+type Query {
+	info: String!
+	bibliotheque: [Livre!]!
+}
 
+type Mutation {
+	ajouterLivre(titre: String!): Livre!
+}
 
+type Livre {
+	id: ID!
+	titre: String!
+}
+`
+```
+On peut voir que la définition du schéma pourrait devenir très grande avec le temps, on peut donc mettre notre schéma dans un fichier séparément. On crée un nouveau fichier à partir de la racine du projet:
+```
+touch src/schema.graphql
+```
+Ensuite on ne fait que copier le contenu de la définition du schéma dans le nouveau fichier:
+```
+type Query {
+	info: String!
+	bibliotheque: [Livre!]!
+}
 
+type Mutation {
+	ajouterLivre(titre: String!): Livre!
+}
+
+type Livre {
+	id: ID!
+	titre: String!
+}
+```
+En faisait cela, nous n'avons plus besoin de la constante typeDefs dans index.js, on peut donc la supprimer. À la place, on va changer la façon d'instancier le server dans le bas de index.js:
+```
+const server = new GraphQLServer({
+  typeDefs: './src/schema.graphql',
+  resolvers,
+})
+```
+On ne fait que dire au serveur que la définition du schéma est dans le fichier localiser à ./src/schema.graphql.
+
+Après avoir modifier le schéma, on doit implémenter le resolver de la nouvelle mutation.:
+```JavaScript
+let livres = [{
+  id: '0',
+  titre: "GraphQL pour les nuls"
+}]
+let idLivre livres.length
+const resolvers = {
+  Query: {
+    info: () => `Ceci est l'API d'une bibliothèque`,
+    feed: () => livres,
+  },
+  Mutation: {
+    ajouterLivre: (parent, args) => {
+       const livre = {
+        id: `${idCount++}`,
+        titre: args.titre
+      }
+      livres.push(livre)
+      return livre
+    }
+  },
+}
+```
+Premièrement, on peut remarquer qu'on a retirer les resolvers pour les attributs du type Livre. Cette implémentation était triviale et le serveur n'en a pas besoin pour fonctionner, il peut le faire lui-même.
+On a ajouter un compteur pour générer des id unique pour chaque livre. ce compteur est incrémenter à chaque livre qui est ajouté à la liste.
+On a aussi ajouter le resolver de la requête ajouterLivre qui fait partie du type Mutation. Le resolver crée un nouveau livre et ajoute ces attributs qu'on a passer en paramètre de la requête(args) pour ensuite ajouter le nouveau livre à la liste de livres.
+On retourne le livre crée pour confirmer au client que le livre a bien été créé.
+
+On peut maintenant tester notre nouvelle mutation, on a seulement besoin d'arrêter et repartir le serveur et se diriger sur GraphQl Playground. On peut ensuite lancer cette requête pour ajouter un livre à la liste:
+```
+mutation {
+	ajouterLivre(
+		titre: "Le Seigneur des Anneaux"
+		) {
+			id
+		}
+}
+```
+On devrait reçevoir un réponse qui ressemble à cela:
+```
+{
+	"data": {
+		"ajouterLivre": {
+			"id": "1"
+		}
+	}
+}
+```
+À chaque fois que l'on ajoute un livre l'id devrait s'incrémenter.
+Pour vérifier que notre livre à bien été ajouter on peut refaire la même requête qu'auparavant pour aller chercher tous les livres(bibliotheque. Par contre, à chaque fois que l'on ferme le serveur, les données seront perdus. La prochaine section montrera comment mettre en place une base de données pour garder les livres.
 
 
 
 ### Exécution des requêtes
+
+
+### Ajout d'une base de données
+
