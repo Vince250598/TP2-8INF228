@@ -77,7 +77,7 @@ On peut maintenant tester notre serveur GraphQL en utilisant cette commande à p
 node src/index.js
 ```
 Comme mentionné dans la fenêtre de commande, le serveur est sur localhost:4000, pour tester notre API on n'a qu'a naviguer sur localhost:4000 à l'aide d'un navigateur. On arrive sur le GraphQL Playground, un "application" qui permet de tester des APIs GraphQL de façon interactive.
-!(/GraphQLPlayground.png)
+![](./GraphQLPlayground.png)
 En cliquant sur le bouton schéma à droite on peut voir la documentation de l'API, elle affiche tous les opérations et types de notre schéma GraphQL.
 
 On peut envoyer une requête de la manière suivante:
@@ -248,8 +248,11 @@ const resolvers = {
 }
 ```
 Premièrement, on peut remarquer qu'on a retirer les resolvers pour les attributs du type Livre. Cette implémentation était triviale et le serveur n'en a pas besoin pour fonctionner, il peut le faire lui-même(On explique plus en détail plus bas).
+
 On a ajouter un compteur pour générer des id unique pour chaque livre. ce compteur est incrémenter à chaque livre qui est ajouté à la liste.
+
 On a aussi ajouter le resolver de la requête ajouterLivre qui fait partie du type Mutation. Le resolver crée un nouveau livre et ajoute ces attributs qu'on a passer en paramètre de la requête(args) pour ensuite ajouter le nouveau livre à la liste de livres.
+
 On retourne le livre crée pour confirmer au client que le livre a bien été créé.
 
 On peut maintenant tester notre nouvelle mutation, on a seulement besoin d'arrêter et repartir le serveur et se diriger sur GraphQl Playground. On peut ensuite lancer cette requête pour ajouter un livre à la liste:
@@ -277,15 +280,89 @@ Pour vérifier que notre livre à bien été ajouter on peut refaire la même re
 
 ### Exécution des requêtes
 Je vais maintenant vous expliquer comment interagissent les différentes couches des resolvers et les requêtes.
-!(./executionRequete.png)
+![](./executionRequete.png)
 Voici un schéma illustrant les différentes étapes du serveur lors d'une requête d'un client.
+
 1.La requête arrive dans le serveur sous sa forme originale.
+
 2.Le serveur invoque le resolver qui est associé à l'attribut bibliotheque du type Query. Dans cet exemple on assume que la liste de livre ne contient qu'un seul livre, le serveur retourne donc le livre présent dans la liste.
+
 3.Ensuite, le serveur invoque le resolver pour l'attribut id de Livre. Le parent contient alors la valeur de retour du resolver de la couche supérieur, parent contient {"id": "1", "titre": "Le Seigneur des Anneaux"}. Le serveur n'a seulement besoin que de retourner parent.id.
+
 4.On fait la même chose que pour la troisième étape sauf qu'on retourne parent.titre. Il est a noté que les étapes 3 et 4 peuvent être exécutés en parallèle.
+
 5.Le processus de résolution est terminé. Le serveur met donc le résultat sous la forme standard de GraphQL.
 
 On voit qu'on peut omettre les resolvers quand ils sont triviaux comme livre.id et livre.titre car le serveur n'en as pas besoin. C'est pour cela qu'on les a retiré plus tôt dans le tutoriel.
 
 ### Ajout d'une base de données
+Nous allons maintenant mettre en place un base de données pour pouvoir sauvegarder nos livres. J'ai choisi d'utiliser mongoDB pour sa simplicité. Pour simplifier encore plus les choses nous allons utiliser un fournisseur de base de données: [mlab.com](mlab.com). En s'inscrivant sur mlab, on obtient accès à une base de données mongoDB gratuitement et assez d'espace pour ce tutoriel. 
 
+Avant de mettre en place la base de données, on doit ajouter une dépendance au projet: mongoose. Mongoose sert à faire le lien entre le code et la base de données afin de ne pas avoir à écrire des requêtes directement à la base de données. Ouvrez un terminal à partir de la racine du projet et entrez:
+```
+yarn add mongoose
+```
+Cela ajoutera mongoose à notre projet.
+
+Pour mettre la bd en place, vous pouvez commencer par vous rendre sur le site web de mlab pour ensuite vous créer un compte. Ensuite, on vous demandera de choisir votre plan, on prend gratuit. Après on doit choisir la région, prenez celle par défaut. On doit ensuite attendre l'allocation de la base de données. 
+
+Quand le chargement est terminé, cliquez sur Database Access dans le menu à gauche et ensuite sur add new user à droite. Choisissez un nom d'utilisateur ainsi qu'un mot de passe et donnez les privilèges d'écriture et de lecture à l'utilisateur. Pour finir cliquez sur add user.
+
+Après, on peut cliquez sur Network Access dans le menu à gauche et ensuite sur add ip address. Vous pouvez entrer l'adresse ip 0.0.0.0/0 pour donnez accès à n'importe laquel adresse ou bien votre propre addresse ip, libre à vous. Cliquez su confirm pour confirmer
+
+Nous sommes prêt à nous connecter, cliquez sur Clusters dans le menu à gauche et ensuite sur connect dans Cluster0. Dans la nouvelle fenêtre, cliquez sur Connect Your Application et ensuite copier le string de connection qui est fourni.
+
+On peut maintenant ajouter ce code dans le haut de index.js qui permettera à notre api de se connecter à la base de données:
+```JavaScript
+const mongoose = require('mongoose')
+const db = mongoose.connect('mongodb+srv://username:password@cluster0-n4u4h.mongodb.net/test?retryWrites=true&w=majority')
+const Schema = mongoose.Schema
+const schemaLivre = new Schema({
+	titre: {type: String}
+	})
+const Livre = mongoose.model('livre', schemaLivre)
+```
+note:remplacer username et password dans le string de connection par ceux que vous avez créé auparavant.
+
+Ce code se connecte à la bd et ensuite on défini la forme des données qui seront stocker dans la bd. Nous aurons seulement besoin d'interagir avec Livre pour accèder aux données de la bd.
+
+On doit ensuite modifier nos resolvers pour qu'il prennent les données de la bd à la place de ceux de la liste en mémoire:
+```JavaScript
+const resolvers = {
+	Query: {
+		info: () => `Ceci est l'API d'une bibliotheque`,
+		bibliotheque: () => Livre.find({}),
+	},
+	Mutation: {
+		ajouterLivre: async (parent, args) => {
+			const livre = new Livre({
+				titre: args.titre
+			})
+			const error = await livre.save()
+
+			if(error) return error
+			return livre
+		}
+	}
+}
+```
+On commence par modifier la requête bibliotheque pour qu'elle retourne tous les livre qui font partie de la bd.
+
+Ensuite on modifie ajouterLivre pour qu'elle ajoute le livre à la bd et on met aussi une gestion d'erreur.
+
+Pour finir on peut supprimer la liste de livres qui est en mémoire et la variable qui permettait de garder le compte de livre pour générer les ids. Les ids sont généré automatiquement avec notre configuration.
+
+On peut maintenant aller tester nos modification et vérifier si nos données sont conservées. Dirigez-vous sur GraphQL Playground et entrer la mutation suivante:
+```
+mutation {
+	ajouterLivre(titre:"Harry Potter") {
+		id
+		titre
+	}
+}
+```
+Cela devrait vous retourner le livre avec son id généré automatiquement. Si on exécute la requête bibliotheque, ce nouveau livre devrait être afficher. 
+
+Les données sont maintenant persistées, donc si vous redémarrer le serveur, elles seront toujours là! Essayez pour voir.
+
+## Conclusion
