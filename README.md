@@ -229,16 +229,16 @@ let livres = [{
   id: '0',
   titre: "GraphQL pour les nuls"
 }]
-let idLivre livres.length
+let idLivre = livres.length
 const resolvers = {
   Query: {
     info: () => `Ceci est l'API d'une bibliothèque`,
-    feed: () => livres,
+    bibliotheque: () => livres,
   },
   Mutation: {
     ajouterLivre: (parent, args) => {
        const livre = {
-        id: `${idCount++}`,
+        id: `${idLivre++}`,
         titre: args.titre
       }
       livres.push(livre)
@@ -247,7 +247,7 @@ const resolvers = {
   },
 }
 ```
-Premièrement, on peut remarquer qu'on a retirer les resolvers pour les attributs du type Livre. Cette implémentation était triviale et le serveur n'en a pas besoin pour fonctionner, il peut le faire lui-même.
+Premièrement, on peut remarquer qu'on a retirer les resolvers pour les attributs du type Livre. Cette implémentation était triviale et le serveur n'en a pas besoin pour fonctionner, il peut le faire lui-même(On explique plus en détail plus bas).
 On a ajouter un compteur pour générer des id unique pour chaque livre. ce compteur est incrémenter à chaque livre qui est ajouté à la liste.
 On a aussi ajouter le resolver de la requête ajouterLivre qui fait partie du type Mutation. Le resolver crée un nouveau livre et ajoute ces attributs qu'on a passer en paramètre de la requête(args) pour ensuite ajouter le nouveau livre à la liste de livres.
 On retourne le livre crée pour confirmer au client que le livre a bien été créé.
@@ -275,10 +275,17 @@ On devrait reçevoir un réponse qui ressemble à cela:
 À chaque fois que l'on ajoute un livre l'id devrait s'incrémenter.
 Pour vérifier que notre livre à bien été ajouter on peut refaire la même requête qu'auparavant pour aller chercher tous les livres(bibliotheque. Par contre, à chaque fois que l'on ferme le serveur, les données seront perdus. La prochaine section montrera comment mettre en place une base de données pour garder les livres.
 
-
-
 ### Exécution des requêtes
+Je vais maintenant vous expliquer comment interagissent les différentes couches des resolvers et les requêtes.
+!(./executionRequete.png)
+Voici un schéma illustrant les différentes étapes du serveur lors d'une requête d'un client.
+1.La requête arrive dans le serveur sous sa forme originale.
+2.Le serveur invoque le resolver qui est associé à l'attribut bibliotheque du type Query. Dans cet exemple on assume que la liste de livre ne contient qu'un seul livre, le serveur retourne donc le livre présent dans la liste.
+3.Ensuite, le serveur invoque le resolver pour l'attribut id de Livre. Le parent contient alors la valeur de retour du resolver de la couche supérieur, parent contient {"id": "1", "titre": "Le Seigneur des Anneaux"}. Le serveur n'a seulement besoin que de retourner parent.id.
+4.On fait la même chose que pour la troisième étape sauf qu'on retourne parent.titre. Il est a noté que les étapes 3 et 4 peuvent être exécutés en parallèle.
+5.Le processus de résolution est terminé. Le serveur met donc le résultat sous la forme standard de GraphQL.
 
+On voit qu'on peut omettre les resolvers quand ils sont triviaux comme livre.id et livre.titre car le serveur n'en as pas besoin. C'est pour cela qu'on les a retiré plus tôt dans le tutoriel.
 
 ### Ajout d'une base de données
 
