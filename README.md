@@ -366,7 +366,7 @@ Cela devrait vous retourner le livre avec son id généré automatiquement. Si o
 Les données sont maintenant persistées, donc si vous redémarrer le serveur, elles seront toujours là! Essayez pour voir.
 
 ## Conclusion
-Dans ce tutoriel, vous avez appris à contruire un serveur GraphQL à partir de rien du tout en utilisant Node.js, graphql-yoga et un base de données mangoDB avec Mongoose. Il y a beaucoup d'aspects de GraphQL que nous n'avons pas explorer, comme les Subscriptions, la pagination, le triage, le filtrage et plusieurs autres. 
+Dans ce tutoriel, vous avez appris à contruire un serveur GraphQL à partir de rien du tout en utilisant Node.js, graphql-yoga et un base de données mangoDB avec Mongoose. Il y a beaucoup d'aspects de GraphQL que nous n'avons pas explorer, comme l'authentification des usagers, les Subscriptions, la pagination, le triage, le filtrage et plusieurs autres. GraphQL est un outil très puissant malgré ses quelques faiblesses
 
 Vous êtes maintenant capable de constuire un serveur GraphQL en n'importe lequel language de programmation et moyen de stocker les données(cela nécessitera un peu de recherche pour trouver les bon outils).
 
