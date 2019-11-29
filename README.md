@@ -374,7 +374,11 @@ Pour plus d'information et de tutoriels sur GraphQL, vous pouvez vous rendre sur
 
 ### Références
 [How to GraphQL - graphQL node tutorial](howtographql.com/graphql-js/0-introduction/)
+
 [Apollo GraphQL - tutorial](https://www.apollographql.com/docs/tutorial/introduction/)
+
 [GraphQL Server Basics](https://www.prisma.io/blog/graphql-server-basics-the-schema-ac5e2950214e)
+
 [Playing with GraphQL yoga and mongoose](https://dev.to/aurelkurtula/playing-with-graphql-yoga-and-mongoose-f4f)
+
 [Building a RESTful API with Express and MongoDB - Working with mongoDB](https://dev.to/aurelkurtula/building-a-restful-api-with-express-and-mongodb--3mmh)
