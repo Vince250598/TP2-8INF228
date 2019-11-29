@@ -19,8 +19,8 @@ L'objetif de ce tutoriel est de vous apprendre à créer un serveur qui utilise 
 ## Tutoriel
 Ce tutoriel à été conçu pour un système d'exploitation linux, j'ai utilisé Ubuntu, mais plusieurs distributions devraient fonctionner.
 Pour commencer, quelques technologies doivent être déjà installées sur votre ordinateur, nous utiliserons ces technologies pour rendre notre expérience plus simple. Les technologies sont les suivantes:
-- Yarn, pour gérer les dépendances du projet
-- Node.js, pour exécuter le code Javascript du serveur
+- [Yarn](https://yarnpkg.com/en/docs/install#debian-stable), pour gérer les dépendances du projet
+- [Node.js](https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/), pour exécuter le code Javascript du serveur
 
 ### Le Commencement
 On commence par ouvrir le terminal on se crée un répertoire pour y placer notre projet et on utilise yarn init pour créer un fichier de configuration pour Node à l'aide des commandes suivantes.
