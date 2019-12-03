@@ -126,7 +126,7 @@ let livres = [{
 
 const resolvers = {
 	Query: {
-		info() => `Ceci est l'API d'une bibliothèque`,
+		info: () => `Ceci est l'API d'une bibliothèque`,
 		bibliotheque: () => livres,
 	},
 
