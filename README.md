@@ -17,7 +17,7 @@ Ce qui est bien avec le GraphQL, c'est qu'on reçois seulement ce que l'on deman
 L'objetif de ce tutoriel est de vous apprendre à créer un serveur qui utilise GraphQL. Après ce tutoriel, vous aurez une bonne base pour bien comprendre l'utilité et bien implémenter GraphQL dans n'importe quelle application. Nous créérons un serveur en JavaScript qui simule la gestion d'une bibliothèque.
 
 ## Tutoriel
-Ce tutoriel à été conçu pour un système d'exploitation linux, j'ai utilisé Ubuntu, mais plusieurs distributions devraient fonctionner.
+J'ai testé le tutoriel avec Ubuntu et Windows et tout fonctionnait correctement, il devrait également fonctionner avec d'autres distributions de Linux. Les commandes du tutoriels sont des commandes Linux mais il existe des équivalent Windows.
 Pour commencer, quelques technologies doivent être déjà installées sur votre ordinateur, nous utiliserons ces technologies pour rendre notre expérience plus simple. Les technologies sont les suivantes:
 - [Yarn](https://yarnpkg.com/en/docs/install#debian-stable), pour gérer les dépendances du projet
 - [Node.js](https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/), pour exécuter le code Javascript du serveur
