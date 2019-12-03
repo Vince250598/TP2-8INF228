@@ -1,0 +1,13 @@
+type Query {
+    info: String!
+    bibliotheque: [Livre!]!
+}
+
+type Mutation {
+    ajouterLivre(titre: String!): Livre!
+}
+
+type Livre {
+    id: ID!
+    titre: String!
+}
